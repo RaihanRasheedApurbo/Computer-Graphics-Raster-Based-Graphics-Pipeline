@@ -19,26 +19,67 @@ public:
         // (a2b3−a3b2)i−(a1b3−a3b1)j+(a1b2−a2b1)k.
         Vector result;
         result.x = x.y*y.z-x.z*y.y;
-        result.y = x.x*y.z-x.z*y.x;
+        result.y = -(x.x*y.z-x.z*y.x);
         result.z = x.x*y.y-x.y*y.x;
+        return result;
+
+    }
+
+    static Vector normalize(const Vector& a)
+    {
+        Vector result;
+        double divisor = sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
+        result.x = a.x/divisor;
+        result.y = a.y/divisor;
+        result.z = a.z/divisor;
+        
+        if(abs(result.x) < 0.0001)
+        {
+            result.x = 0;
+        }
+        if(abs(result.y) < 0.0001)
+        {
+            result.y = 0;
+        }
+        if(abs(result.z) < 0.0001)
+        {
+            result.z = 0;
+        }
+
+
         return result;
 
     }
 
     static Vector rodrigezFormula(const Vector &x, const Vector &a, const double angle)
     {
+        Vector normalizedA = Vector::normalize(a);
         Vector result;
         double constant1 = 0; // calculateion of (1-cos(theta)(a dot x))
         const double PIE = 2*acos(0);
         double angleInRedian = (PIE/180)*angle;
-        constant1 = (1-cos(angleInRedian))*Vector::dotProduct(a,x);
-        Vector aCrossX = Vector::crossProduct(a,x);
+        constant1 = (1-cos(angleInRedian))*Vector::dotProduct(normalizedA,x);
+        Vector aCrossX = Vector::crossProduct(normalizedA,x);
         double cosTheta = cos(angleInRedian);
         double sinTheta = sin(angleInRedian);
 
-        result.x = cosTheta*x.x + constant1*a.x + sinTheta* aCrossX.x;
-        result.y = cosTheta*x.y + constant1*a.y + sinTheta* aCrossX.y;
-        result.z = cosTheta*x.z + constant1*a.z + sinTheta* aCrossX.z;
+        result.x = cosTheta*x.x + constant1*normalizedA.x + sinTheta* aCrossX.x;
+        result.y = cosTheta*x.y + constant1*normalizedA.y + sinTheta* aCrossX.y;
+        result.z = cosTheta*x.z + constant1*normalizedA.z + sinTheta* aCrossX.z;
+
+        if(abs(result.x) < 0.0001)
+        {
+            result.x = 0;
+        }
+        if(abs(result.y) < 0.0001)
+        {
+            result.y = 0;
+        }
+        if(abs(result.z) < 0.0001)
+        {
+            result.z = 0;
+        }
+
 
         return result;
     }
@@ -108,7 +149,7 @@ public:
                 result.table[i][j] = 0;
                 for(int k=0;k<4;k++)
                 {
-                    result.table[i][j] += matrix1.table[i][k]*matrix2.table[j][k];
+                    result.table[i][j] += matrix1.table[i][k]*matrix2.table[k][j];
                 }
             }
         }
@@ -201,6 +242,7 @@ int main()
     // stage 1: Modeling Transformation
     
     ifstream inputFile("scene.txt");
+    ofstream outputFile("output.txt");
 
     Vector eye;
     inputFile>>eye;
@@ -244,7 +286,7 @@ int main()
             Triangle t1;
             inputFile>>t1.a>>t1.b>>t1.c;
             Triangle afterTransform = machine.transform(t1);
-            cout<<afterTransform.a<<afterTransform.b<<afterTransform.c<<endl; 
+            outputFile<<afterTransform.a<<afterTransform.b<<afterTransform.c<<endl;
             triangles.push_back(afterTransform);
             counter++;
         }
