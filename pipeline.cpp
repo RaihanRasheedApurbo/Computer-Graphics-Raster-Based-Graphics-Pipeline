@@ -239,10 +239,10 @@ void printStringAscii(const string &s)
 int main()
 {
     
-    // stage 1: Modeling Transformation
+    
     
     ifstream inputFile("scene.txt");
-    ofstream outputFile("output.txt");
+    ofstream outputFile("output1.txt");
 
     Vector eye;
     inputFile>>eye;
@@ -263,6 +263,7 @@ int main()
     // cout<<far<<endl;
 
     // initializing matrix stack
+    // stage 1: Modeling Transformation
     TransformationMachine machine;
     vector<Triangle> triangles; 
 
@@ -365,5 +366,22 @@ int main()
 
     
     inputFile.close();
+    outputFile.close();
+
+    // stage 1: Modeling Transformation completed
+
+    // stage 2: View Transformation
+    ofstream outputFile("output2.txt");
+    Vector l,r,u;
+    l.x = look.x-eye.x;
+    l.y = look.y-eye.y;
+    l.z = look.z-eye.z;
+    l = Vector::normalize(l);
+    r = Vector::crossProduct(l,up);
+    u = Vector::crossProduct(r,l);
+    
+    
+
+
 
 }
