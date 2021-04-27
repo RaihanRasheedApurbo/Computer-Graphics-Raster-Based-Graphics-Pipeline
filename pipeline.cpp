@@ -271,12 +271,18 @@ void printStringAscii(const string &s)
     cout<<endl;
 }
 
+double toRedian(double angle)
+{
+    double PIE = 2 * acos(0);
+    return (PIE/180)*angle;
+}
+
 int main()
 {
     
     
     
-    ifstream inputFile("Test Cases (Updated)/4/scene.txt");
+    ifstream inputFile("Test Cases (Updated)/1/scene.txt");
     ofstream outputFile("output1.txt");
 
     Vector eye;
@@ -290,8 +296,8 @@ int main()
     Vector up;
     inputFile>>up;
     // cout<<up;
-    double fovy,aspectRatio,near,far;
-    inputFile>>fovy>>aspectRatio>>near>>far;
+    double fovY,aspectRatio,near,far;
+    inputFile>>fovY>>aspectRatio>>near>>far;
     // cout<<fovy<<endl;
     // cout<<aspectRatio<<endl;
     // cout<<near<<endl;
@@ -449,9 +455,37 @@ int main()
 
     outputFile2.close();
 
-    //stage 2 completed
+    // stage 2: View Transformation complted
+
+    //stage 3: Projection Transformation
+
+    // double fovy,aspectRatio,near,far;
+    // inputFile>>fovy>>aspectRatio>>near>>far;
+    double fovX = fovY * aspectRatio;
+    double tConstant = near * tan(toRedian(fovY/2));
+    double rConstant = near * tan(toRedian(fovX/2));
+    Matrix p;
+    Matrix::makeIdentity(p);
+    p.table[0][0] = near/rConstant;
+    p.table[1][1] = near/tConstant;
+    p.table[2][2] = -(far+near)/(far-near);
+    p.table[2][3] = -(2*far*near)/(far-near);
+    p.table[3][2] = -1;
+    p.table[3][3] = 0;
 
 
+    vector<Triangle> trianglesStage3 = p.multiplyTriangles(trianglesStage2);
+
+    ofstream outputFile3("output3.txt");
+
+    for(int i=0;i<trianglesStage3.size();i++)
+    {
+        outputFile3<<trianglesStage3[i].a<<trianglesStage3[i].b<<trianglesStage3[i].c<<endl;
+    }
+
+    outputFile3.close();
+
+    
 
 
     
