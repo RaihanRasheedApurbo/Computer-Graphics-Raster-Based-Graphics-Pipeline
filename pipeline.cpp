@@ -145,9 +145,9 @@ public:
             }
         }
         Vector res;
-        res.x = result[0];
-        res.y = result[1];
-        res.z = result[2];
+        res.x = result[0]/result[3];
+        res.y = result[1]/result[3];
+        res.z = result[2]/result[3];
         return res;
 
     }
@@ -282,7 +282,7 @@ int main()
     
     
     
-    ifstream inputFile("Test Cases (Updated)/1/scene.txt");
+    ifstream inputFile("Test Cases (Updated)/4/scene.txt");
     ofstream outputFile("output1.txt");
 
     Vector eye;
