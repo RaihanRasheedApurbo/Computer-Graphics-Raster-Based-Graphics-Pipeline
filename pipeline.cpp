@@ -121,6 +121,18 @@ class Matrix
 public:
     double table[4][4];
 
+    Vector multiplyVector(const Vector &v)
+    {
+        double homogenousPoint[4];
+        homogenousPoint[0] = v.x;
+        homogenousPoint[1] = v.y;
+        homogenousPoint[2] = v.z;
+        homogenousPoint[3] = 1;
+
+        return multiplyPoint(homogenousPoint);
+           
+    }
+    
     Vector multiplyPoint(const double* point)
     {
         double result[4];
@@ -139,6 +151,29 @@ public:
         return res;
 
     }
+
+    
+
+    Triangle multiplyTriangle(const Triangle &t)
+    {
+        Triangle result;
+        result.a = multiplyVector(t.a);
+        result.b = multiplyVector(t.b);
+        result.c = multiplyVector(t.c);
+        return result;
+    }
+
+    vector<Triangle> multiplyTriangles(const vector<Triangle> &triangles)
+    {
+        vector<Triangle> result;
+        for(int i=0;i<triangles.size();i++)
+        {
+            Triangle t = multiplyTriangle(triangles[i]);
+            result.push_back(t);
+        }
+        return result;
+    }
+
     static Matrix multiply(const Matrix& matrix1, const Matrix& matrix2)
     {
         Matrix result;
@@ -241,7 +276,7 @@ int main()
     
     
     
-    ifstream inputFile("scene.txt");
+    ifstream inputFile("Test Cases (Updated)/4/scene.txt");
     ofstream outputFile("output1.txt");
 
     Vector eye;
@@ -371,14 +406,56 @@ int main()
     // stage 1: Modeling Transformation completed
 
     // stage 2: View Transformation
-    ofstream outputFile("output2.txt");
     Vector l,r,u;
     l.x = look.x-eye.x;
     l.y = look.y-eye.y;
     l.z = look.z-eye.z;
     l = Vector::normalize(l);
     r = Vector::crossProduct(l,up);
+    r = Vector::normalize(r);
     u = Vector::crossProduct(r,l);
+    u = Vector::normalize(u);
+
+    Matrix trans;
+    Matrix::makeIdentity(trans);
+    trans.table[0][3] = -eye.x;
+    trans.table[1][3] = -eye.y;
+    trans.table[2][3] = -eye.z;
+
+    Matrix rot;
+    Matrix::makeIdentity(rot);
+    rot.table[0][0] = r.x;
+    rot.table[0][1] = r.y;
+    rot.table[0][2] = r.z;
+    
+    rot.table[1][0] = u.x;
+    rot.table[1][1] = u.y;
+    rot.table[1][2] = u.z;
+
+    rot.table[2][0] = -l.x;
+    rot.table[2][1] = -l.y;
+    rot.table[2][2] = -l.z;
+
+    Matrix v = Matrix::multiply(rot,trans);
+
+    vector<Triangle> trianglesStage2 = v.multiplyTriangles(triangles);
+
+    ofstream outputFile2("output2.txt");
+
+    for(int i=0;i<trianglesStage2.size();i++)
+    {
+        outputFile2<<trianglesStage2[i].a<<trianglesStage2[i].b<<trianglesStage2[i].c<<endl;
+    }
+
+    outputFile2.close();
+
+    //stage 2 completed
+
+
+
+
+    
+    
     
     
 
