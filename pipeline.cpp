@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include "bmp_image_codes/bitmap_image.hpp"
 using namespace std;
 
 class Vector
@@ -277,6 +278,13 @@ double toRedian(double angle)
     return (PIE/180)*angle;
 }
 
+class Color
+{
+public:
+    int r,g,b;
+
+};
+
 int main()
 {
     
@@ -484,6 +492,64 @@ int main()
     }
 
     outputFile3.close();
+
+    ifstream inputFile2("Test Cases (Updated)/4/config.txt");
+
+    double screenWidth, screenHeight, leftLimit, rightLimit, bottomLimit,
+           topLimit, zFront, zNear;
+        
+    inputFile2>>screenWidth>>screenHeight;
+    inputFile2>>leftLimit>>bottomLimit;
+    rightLimit = -leftLimit;
+    topLimit = - bottomLimit;
+    inputFile2>>zFront>>zNear;
+
+    vector<Color> triangleColors;
+    for(int i=0;i<trianglesStage3.size();i++)
+    {
+        int RGB_LIMIT = 255;
+        Color t;
+        t.r = rand()%RGB_LIMIT;
+        t.g = rand()%RGB_LIMIT;
+        t.b = rand()%RGB_LIMIT;
+        triangleColors.push_back(t);
+    }
+    cout<<"kill meh"<<endl;
+    
+    double dx = (rightLimit-leftLimit)/screenWidth;
+    double dy = (topLimit-bottomLimit)/screenHeight;
+    double topY = topLimit - dy/2;
+    double leftX = leftLimit + dx/2;
+    
+
+    vector<vector<double>> zBuffer;
+    for(int i=0;i<screenHeight;i++)
+    {
+        vector<double> t;
+        for(int j=0;j<screenWidth;j++)
+        {
+            t.push_back(zNear);
+        }
+        zBuffer.push_back(t);
+    }
+
+    bitmap_image image(screenWidth,screenHeight);
+
+    // for(int i=0;i<trianglesStage3.size();i++)
+    // {
+    //     Triangle &t = trianglesStage3[i];
+    //     double topScanline = getTopScanline(t,topY);
+    //     double bottomScanline = getBottomScanline(t,-topY);
+    // }
+
+    image.save_image("test.bmp");
+
+
+
+
+     
+
+
 
     
 
