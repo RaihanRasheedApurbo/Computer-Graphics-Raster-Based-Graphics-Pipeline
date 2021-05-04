@@ -361,8 +361,9 @@ int main()
 {
     
     
-    
-    ifstream inputFile("Test Cases (Updated)/4/scene.txt");
+    string file1 = "Test Cases (Updated)/3/scene.txt";
+    string file2 = "Test Cases (Updated)/3/config.txt";
+    ifstream inputFile(file1);
     ofstream outputFile("output1.txt");
 
     Vector eye;
@@ -565,7 +566,7 @@ int main()
 
     outputFile3.close();
 
-    ifstream inputFile2("Test Cases (Updated)/4/config.txt");
+    ifstream inputFile2(file2);
 
     double screenWidth, screenHeight, leftLimit, rightLimit, bottomLimit,
            topLimit, zFront, zNear;
@@ -587,6 +588,8 @@ int main()
         triangleColors.push_back(t);
     }
     cout<<"kill meh"<<endl;
+    cout.precision(6);
+    cout<<2.5<<setw(10)<<2.4452382928<<endl;
     
     double dx = (rightLimit-leftLimit)/screenWidth;
     double dy = (topLimit-bottomLimit)/screenHeight;
@@ -687,7 +690,7 @@ int main()
             }
             else
             {
-                outputFile4<<zBuffer[i][j]<<setw(4);
+                outputFile4<<fixed<<setprecision(6)<<zBuffer[i][j]<<"    ";
             }
         }
         outputFile4<<endl;
