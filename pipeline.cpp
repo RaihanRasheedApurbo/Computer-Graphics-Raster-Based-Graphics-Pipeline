@@ -144,6 +144,49 @@ public:
             return bottomY;
         }
     }
+
+    vector<double> filterX (double x12, const double x23, const double x31)
+    {
+        double minX = min(a.x,min(b.x,c.x));
+        double maxX = max(a.x,max(b.x,c.x));
+
+        vector<double> result;
+        if(minX<=x12 && x12<=maxX)
+        {
+            result.push_back(x12);
+        }
+        if(minX<=x23 && x23<=maxX)
+        {
+            result.push_back(x23);
+        }
+        if(minX<=x31 && x31<=maxX)
+        {
+            result.push_back(x31);
+        }
+        return result;
+    }
+
+    vector<double> filterZ (double z12, const double z23, const double z31)
+    {
+        double minZ = min(a.z,min(b.z,c.z));
+        double maxZ = max(a.z,max(b.z,c.z));
+
+        vector<double> result;
+        if(minZ<=z12 && z12<=maxZ)
+        {
+            result.push_back(z12);
+        }
+        if(minZ<=z23 && z23<=maxZ)
+        {
+            result.push_back(z23);
+        }
+        if(minZ<=z31 && z31<=maxZ)
+        {
+            result.push_back(z31);
+        }
+        return result;
+    }
+
 };
 
 class Matrix
@@ -573,51 +616,62 @@ int main()
         int rowEnd = (topY-bottomScanLine)/dy;
         for(int j=rowStart;j<=rowEnd;j++)
         {
-            
-            double ys = topY-j*dy;
-            Vector p1 = t.a;
-            Vector p2 = t.b;
-            Vector p3 = t.c;
-            if(p1.y==p2.y)
-            {
-                Vector t = p1;
-                p1 = p3;
-                p3 = t;
-            }
-            if(p1.y==p3.y)
-            {
-                Vector t = p1;
-                p1 = p2;
-                p2 = t;
-            }
-            double x1 = p1.x, y1 =p1.y, z1 = p1.z;
-            double x2 = p2.x, y2 =p2.y, z2 = p2.z;
-            double x3 = p3.x, y3 =p3.y, z3 = p3.z;
-            // double y1 = t.a.y, y2 = t.b.y, y3 = t.c.y;
-            // double z1 = t.a.z, z2 = t.b.z, z3 = t.c.z;
-            // double x1 = t.a.x, x2 = t.b.x, x3 = t.c.x;
-            double za = z1 - (z1-z2) * ((y1-ys)/(y1-y2));
-            double zb = z1 - (z1-z3) * ((y1-ys)/(y1-y3));
-            double xa = x1 - (x1-x2) * ((y1-ys)/(y1-y2));
-            double xb = x1 - (x1-x3) * ((y1-ys)/(y1-y3));
+            double ys  = topY-j*dy;
+            Vector p1 = t.a, p2 = t.b, p3 =t.c;
+            double z12 = p1.z - (p1.z-p2.z) * ((p1.y-ys)/(p1.y-p2.y));
+            double z23 = p2.z - (p2.z-p3.z) * ((p2.y-ys)/(p2.y-p3.y));
+            double z31 = p3.z - (p3.z-p1.z) * ((p3.y-ys)/(p3.y-p1.y));
 
-            int colStart = (xa-leftX)/dx;
-            int colEnd = (xb-leftX)/dx;
+            double x12 = p1.x - (p1.x-p2.x) * ((p1.y-ys)/(p1.y-p2.y));
+            double x23 = p2.x - (p2.x-p3.x) * ((p2.y-ys)/(p2.y-p3.y));
+            double x31 = p3.x - (p3.x-p1.x) * ((p3.y-ys)/(p3.y-p1.y));
+            vector<double> zs = t.filterZ(z12,z23,z31);
+            vector<double> xs = t.filterX(x12,x23,x31);
+            if(zs.size()!=2 || xs.size()!=2)
+            {
+                continue;
+            }
+            int colStart,colEnd;
+            int t1,t2;
+            double za,zb,xa,xb;
+            t1 = (xs[0]-leftX)/dx;
+            t2 = (xs[1]-leftX)/dx;
+            if(t1>t2)
+            {
+                colStart = t2;
+                colEnd = t1;
+                xa = xs[1];
+                xb = xs[0];
+                za = zs[1];
+                zb = zs[0];
+            }
+            else
+            {
+                colStart = t1;
+                colEnd = t2;
+                xa = xs[0];
+                xb = xs[1];
+                za = zs[0];
+                zb = zs[1];
+            }
+            // bool c1 = z12<z23;
+            // bool c2 = z23<z12;
+            // bool c3 = x12<x23;
+            bool c4 = x23<x12;
+            // cout<<"kill meh"<<endl;
             for(int k=colStart;k<=colEnd;k++)
             {
                 double xp = leftX + k*dx;
                 double zp = zb - (zb-za) * ((xb-xp)/(xb-xa));
-                // cout<<zp<<" "<<xb<<" "<<xa<<endl;
-                if(zFront<=zp && zp<=zNear)
+                if(zBuffer[j][k]>zp && zp >=zFront)
                 {
-                    if(zp<zBuffer[j][k])
-                    {
-                        zBuffer[j][k] = zp;
-                        Color &t = triangleColors[i];
-                        image.set_pixel(k,j,t.r,t.b,t.g);
-                    }
+                    zBuffer[j][k] = zp;
+                    Color &c = triangleColors[i];
+                    image.set_pixel(k,j,c.r,c.g,c.b);
+
                 }
             }
+            
         }
     }
 
