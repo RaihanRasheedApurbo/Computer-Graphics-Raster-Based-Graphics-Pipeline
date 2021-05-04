@@ -115,6 +115,35 @@ class Triangle
 {
 public:
     Vector a,b,c;
+    double topScanLine(const double topY, const double dy)
+    {
+        double maxY = max(a.y,max(b.y,c.y));
+        if(topY>maxY)
+        {
+            double dif = topY-maxY; // .9 - .35 = .55
+            int distance = dif/dy;  // .55/.2 = 2.75(double) = 2 int
+            return topY-distance*dy; // .9 - .2*2 = .5; .35 is between .3 and .5 hence .5 is upper boundary
+        }
+        else
+        {
+            return topY;
+        }
+    }
+
+    double bottomScanLine(const double bottomY, const double dy)
+    {
+        double minY = min(a.y,min(b.y,c.y));
+        if(bottomY<minY)
+        {
+            double dif = minY-bottomY; //  - .35 - (-.9) = .55
+            int distance = dif/dy;  // .55/.2 = 2.75(double) = 2 int
+            return bottomY+distance*dy; // -.9 + .2*2 = .5; -.35 is between -.3 and -.5 hence .5 is upper boundary
+        }
+        else
+        {
+            return bottomY;
+        }
+    }
 };
 
 class Matrix
@@ -535,30 +564,84 @@ int main()
 
     bitmap_image image(screenWidth,screenHeight);
 
-    // for(int i=0;i<trianglesStage3.size();i++)
-    // {
-    //     Triangle &t = trianglesStage3[i];
-    //     double topScanline = getTopScanline(t,topY);
-    //     double bottomScanline = getBottomScanline(t,-topY);
-    // }
+    for(int i=0;i<trianglesStage3.size();i++)
+    {
+        Triangle &t = trianglesStage3[i];
+        double topScanLine = t.topScanLine(topY,dy);
+        double bottomScanLine = t.bottomScanLine(-topY,dy);
+        int rowStart = (topY-topScanLine)/dy;
+        int rowEnd = (topY-bottomScanLine)/dy;
+        for(int j=rowStart;j<=rowEnd;j++)
+        {
+            
+            double ys = topY-j*dy;
+            Vector p1 = t.a;
+            Vector p2 = t.b;
+            Vector p3 = t.c;
+            if(p1.y==p2.y)
+            {
+                Vector t = p1;
+                p1 = p3;
+                p3 = t;
+            }
+            if(p1.y==p3.y)
+            {
+                Vector t = p1;
+                p1 = p2;
+                p2 = t;
+            }
+            double x1 = p1.x, y1 =p1.y, z1 = p1.z;
+            double x2 = p2.x, y2 =p2.y, z2 = p2.z;
+            double x3 = p3.x, y3 =p3.y, z3 = p3.z;
+            // double y1 = t.a.y, y2 = t.b.y, y3 = t.c.y;
+            // double z1 = t.a.z, z2 = t.b.z, z3 = t.c.z;
+            // double x1 = t.a.x, x2 = t.b.x, x3 = t.c.x;
+            double za = z1 - (z1-z2) * ((y1-ys)/(y1-y2));
+            double zb = z1 - (z1-z3) * ((y1-ys)/(y1-y3));
+            double xa = x1 - (x1-x2) * ((y1-ys)/(y1-y2));
+            double xb = x1 - (x1-x3) * ((y1-ys)/(y1-y3));
+
+            int colStart = (xa-leftX)/dx;
+            int colEnd = (xb-leftX)/dx;
+            for(int k=colStart;k<=colEnd;k++)
+            {
+                double xp = leftX + k*dx;
+                double zp = zb - (zb-za) * ((xb-xp)/(xb-xa));
+                // cout<<zp<<" "<<xb<<" "<<xa<<endl;
+                if(zFront<=zp && zp<=zNear)
+                {
+                    if(zp<zBuffer[j][k])
+                    {
+                        zBuffer[j][k] = zp;
+                        Color &t = triangleColors[i];
+                        image.set_pixel(k,j,t.r,t.b,t.g);
+                    }
+                }
+            }
+        }
+    }
+
+    ofstream outputFile4("z_buffer.txt");
+    outputFile4.precision(6);
+    for(int i=0;i<screenHeight;i++)
+    {
+        for(int j=0;j<screenWidth;j++)
+        {
+            if(zBuffer[i][j]==2)
+            {
+                outputFile4<<setw(8)<<setw(4);
+            }
+            else
+            {
+                outputFile4<<zBuffer[i][j]<<setw(4);
+            }
+        }
+        outputFile4<<endl;
+    
+    }
+    outputFile4.close();
 
     image.save_image("test.bmp");
-
-
-
-
-     
-
-
-
-    
-
-
-    
-    
-    
-    
-
 
 
 }
