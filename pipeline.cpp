@@ -400,8 +400,8 @@ int main()
         // printStringAscii(s);
         if(s.find("end") != std::string::npos)
         {
-            cout<<"total command: "<<counter<<endl;
-            cout<<"exiting from loop"<<endl;
+            // cout<<"total command: "<<counter<<endl;
+            // cout<<"exiting from loop"<<endl;
             break;
         }
         else if(s.find("triangle") != std::string::npos)

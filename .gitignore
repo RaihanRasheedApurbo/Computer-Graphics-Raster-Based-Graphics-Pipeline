@@ -5,4 +5,3 @@ pipeline
 test.bmp
 bmp_image_codes/image_drawing
 z_buffer.txt
-.vscode/settings.json
