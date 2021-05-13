@@ -90,7 +90,7 @@ public:
 
 ostream & operator << (ostream &out, const Vector &c)
 {
-    out<<c.x<<","<<c.y<<","<<c.z<<endl;
+    out<<c.x<<" "<<c.y<<" "<<c.z<<endl;
     // out << c.real;
     // out << "+i" << c.imag << endl;
     // return out;
@@ -409,7 +409,7 @@ int main()
             Triangle t1;
             inputFile>>t1.a>>t1.b>>t1.c;
             Triangle afterTransform = machine.transform(t1);
-            outputFile<<afterTransform.a<<afterTransform.b<<afterTransform.c<<endl;
+            outputFile<<fixed<<setprecision(7)<<afterTransform.a<<afterTransform.b<<afterTransform.c<<endl;
             triangles.push_back(afterTransform);
             counter++;
         }
@@ -531,7 +531,7 @@ int main()
 
     for(int i=0;i<trianglesStage2.size();i++)
     {
-        outputFile2<<trianglesStage2[i].a<<trianglesStage2[i].b<<trianglesStage2[i].c<<endl;
+        outputFile2<<fixed<<setprecision(7)<<trianglesStage2[i].a<<trianglesStage2[i].b<<trianglesStage2[i].c<<endl;
     }
 
     outputFile2.close();
@@ -558,14 +558,14 @@ int main()
     vector<Triangle> trianglesStage3 = p.multiplyTriangles(trianglesStage2);
 
     ofstream outputFile3("output3.txt");
-
+    
     for(int i=0;i<trianglesStage3.size();i++)
     {
-        outputFile3<<trianglesStage3[i].a<<trianglesStage3[i].b<<trianglesStage3[i].c<<endl;
+        outputFile3<<fixed<<setprecision(7)<<trianglesStage3[i].a<<trianglesStage3[i].b<<trianglesStage3[i].c<<endl;
     }
 
     outputFile3.close();
-
+    // stage 4: clipping & scan conversion using Z-buffer algorithm
     ifstream inputFile2(file2);
 
     double screenWidth, screenHeight, leftLimit, rightLimit, bottomLimit,
@@ -587,9 +587,9 @@ int main()
         t.b = rand()%RGB_LIMIT;
         triangleColors.push_back(t);
     }
-    cout<<"kill meh"<<endl;
-    cout.precision(6);
-    cout<<2.5<<setw(10)<<2.4452382928<<endl;
+    // cout<<"kill meh"<<endl;
+    // cout.precision(6);
+    // cout<<2.5<<setw(10)<<2.4452382928<<endl;
     
     double dx = (rightLimit-leftLimit)/screenWidth;
     double dy = (topLimit-bottomLimit)/screenHeight;
@@ -611,7 +611,15 @@ int main()
     bitmap_image image(screenWidth,screenHeight);
 
     for(int i=0;i<trianglesStage3.size();i++)
-    {
+    {//2//5//6//11
+        // if(i==2||i==5||i==6||i==7||i==11)
+        // {
+        //     continue;
+        // }
+        // if(i==14)
+        // {
+        //     break;
+        // }
         Triangle &t = trianglesStage3[i];
         double topScanLine = t.topScanLine(topY,dy);
         double bottomScanLine = t.bottomScanLine(-topY,dy);
@@ -634,33 +642,43 @@ int main()
             {
                 continue;
             }
+            if(xs[0]>xs[1])
+            {
+                double t = xs[0];
+                xs[0] = xs[1];
+                xs[1] = t;
+                t = zs[0];
+                zs[0] = zs[1];
+                zs[1] = t;
+            }
+            if((leftX>xs[1])||(-leftX<xs[0]))
+            {
+                continue;
+            }
+
             int colStart,colEnd;
-            int t1,t2;
             double za,zb,xa,xb;
-            t1 = (xs[0]-leftX)/dx;
-            t2 = (xs[1]-leftX)/dx;
-            if(t1>t2)
+            
+
+            colStart = floor((xs[0]-leftX)/dx);
+            colEnd = ceil((xs[1]-leftX)/dx);
+            if(colStart<0)
             {
-                colStart = t2;
-                colEnd = t1;
-                xa = xs[1];
-                xb = xs[0];
-                za = zs[1];
-                zb = zs[0];
+                colStart = 0;            // for the case xs[0]<leftX<xs[1]
             }
-            else
+            if(colEnd>=screenWidth)
             {
-                colStart = t1;
-                colEnd = t2;
-                xa = xs[0];
-                xb = xs[1];
-                za = zs[0];
-                zb = zs[1];
+                colEnd=screenWidth-1;
             }
+            xa = xs[0];
+            xb = xs[1];
+            za = zs[0];
+            zb = zs[1];
+            
             // bool c1 = z12<z23;
             // bool c2 = z23<z12;
             // bool c3 = x12<x23;
-            bool c4 = x23<x12;
+            // bool c4 = x23<x12;
             // cout<<"kill meh"<<endl;
             for(int k=colStart;k<=colEnd;k++)
             {
