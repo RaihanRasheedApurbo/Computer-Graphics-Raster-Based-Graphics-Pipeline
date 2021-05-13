@@ -361,8 +361,8 @@ int main()
 {
     
     
-    string file1 = "Test Cases (Updated)/3/scene.txt";
-    string file2 = "Test Cases (Updated)/3/config.txt";
+    string file1 = "Test Cases (Updated)/4/scene.txt";
+    string file2 = "Test Cases (Updated)/4/config.txt";
     ifstream inputFile(file1);
     ofstream outputFile("output1.txt");
 
@@ -611,15 +611,8 @@ int main()
     bitmap_image image(screenWidth,screenHeight);
 
     for(int i=0;i<trianglesStage3.size();i++)
-    {//2//5//6//11
-        // if(i==2||i==5||i==6||i==7||i==11)
-        // {
-        //     continue;
-        // }
-        // if(i==14)
-        // {
-        //     break;
-        // }
+    {
+        
         Triangle &t = trianglesStage3[i];
         double topScanLine = t.topScanLine(topY,dy);
         double bottomScanLine = t.bottomScanLine(-topY,dy);
@@ -708,7 +701,7 @@ int main()
             }
             else
             {
-                outputFile4<<fixed<<setprecision(6)<<zBuffer[i][j]<<"    ";
+                outputFile4<<fixed<<setprecision(6)<<zBuffer[i][j]<<"\t";
             }
         }
         outputFile4<<endl;
