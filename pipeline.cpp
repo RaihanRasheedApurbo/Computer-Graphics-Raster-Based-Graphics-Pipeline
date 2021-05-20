@@ -145,6 +145,40 @@ public:
         }
     }
 
+    double static distance(const Vector &t1, const Vector &t2)
+    {
+        return sqrt((t1.x-t2.x)*(t1.x-t2.x)+(t1.y-t2.y)*(t1.y-t2.y)+(t1.z-t2.z)*(t1.z-t2.z));
+    }
+
+    void filter(const double ys,const double z12,const double z23,const double z31, 
+                const double x12, const double x23, const double x31, 
+                vector<double> &zs, vector<double> &xs)
+    {
+        Vector p12,p23,p31;
+        p12.x = x12, p12.y = ys, p12.z = z12;
+        p23.x = x23, p23.y = ys, p23.z = z23;
+        p31.x = x31, p31.y = ys, p31.z = z31;
+        double dif12 = distance(a,b)-(distance(a,p12)+distance(p12,b));
+        double dif23 = distance(b,c)-(distance(b,p23)+distance(p23,c));
+        double dif31 = distance(c,a)-(distance(c,p31)+distance(p31,a));
+        if(abs(dif12)<0.0001 && isinf(x12)==false && isinf(z12)==false && isnan(x12)==false && isnan(z12)==false)
+        {
+            zs.push_back(z12);
+            xs.push_back(x12);
+        }
+        if(abs(dif23)<0.0001 && isinf(x23)==false && isinf(x23)==false && isnan(x23)==false && isnan(z23)==false)
+        {
+            zs.push_back(z23);
+            xs.push_back(x23);
+        }
+        if(abs(dif31)<0.0001 && isinf(x31)==false && isinf(z31)==false && isnan(x31)==false && isnan(z31)==false)
+        {
+            zs.push_back(z31);
+            xs.push_back(x31);
+        }
+        return;
+    }
+
     vector<double> filterX (double x12, const double x23, const double x31)
     {
         double minX = min(a.x,min(b.x,c.x));
@@ -361,8 +395,8 @@ int main()
 {
     
     
-    string file1 = "Test Cases (Updated)/4/scene.txt";
-    string file2 = "Test Cases (Updated)/4/config.txt";
+    string file1 = "Test Cases (Updated)/3/scene.txt";
+    string file2 = "Test Cases (Updated)/3/config.txt";
     ifstream inputFile(file1);
     ofstream outputFile("output1.txt");
 
@@ -629,8 +663,16 @@ int main()
             double x12 = p1.x - (p1.x-p2.x) * ((p1.y-ys)/(p1.y-p2.y));
             double x23 = p2.x - (p2.x-p3.x) * ((p2.y-ys)/(p2.y-p3.y));
             double x31 = p3.x - (p3.x-p1.x) * ((p3.y-ys)/(p3.y-p1.y));
-            vector<double> zs = t.filterZ(z12,z23,z31);
-            vector<double> xs = t.filterX(x12,x23,x31);
+
+            // below 2 line uses filterz and filterX function
+            // that doesn't cover all the cases but left here for legacy reason
+            // in later version we have solved this issue using filter function
+            // vector<double> zs = t.filterZ(z12,z23,z31);
+            // vector<double> xs = t.filterX(x12,x23,x31);
+            vector<double> zs;
+            vector<double> xs;
+            t.filter(ys,z12,z23,z31,x12,x23,x31,zs,xs);
+            
             if(zs.size()!=2 || xs.size()!=2)
             {
                 continue;
