@@ -5,3 +5,7 @@ pipeline
 test.bmp
 bmp_image_codes/image_drawing
 z_buffer.txt
+out.bmp
+stage1.txt
+stage3.txt
+stage2.txt

@@ -361,10 +361,11 @@ int main()
 {
     
     
-    string file1 = "Test Cases (Updated)/4/scene.txt";
-    string file2 = "Test Cases (Updated)/4/config.txt";
+    
+    string file1 = "Test Cases (Updated)/3/scene.txt";
+    string file2 = "Test Cases (Updated)/3/config.txt";
     ifstream inputFile(file1);
-    ofstream outputFile("output1.txt");
+    ofstream outputFile("stage1.txt");
 
     Vector eye;
     inputFile>>eye;
@@ -493,6 +494,23 @@ int main()
     // stage 1: Modeling Transformation completed
 
     // stage 2: View Transformation
+    //tasking output of stage2 as input of this stage
+    ifstream inputFileStage1("stage1.txt");
+    triangles.clear();
+    while(inputFileStage1.peek() != EOF)
+    {
+        
+        Triangle t1;
+        inputFileStage1>>t1.a>>t1.b>>t1.c;
+        triangles.push_back(t1);
+        
+    }
+    //because last triangle gets double push_back because eof is reached
+    // after some \r \n charecter so last triangle read
+    // gets the value of previous triangle which is extra
+    // so we are popping that one
+    triangles.pop_back();
+
     Vector l,r,u;
     l.x = look.x-eye.x;
     l.y = look.y-eye.y;
@@ -527,7 +545,7 @@ int main()
 
     vector<Triangle> trianglesStage2 = v.multiplyTriangles(triangles);
 
-    ofstream outputFile2("output2.txt");
+    ofstream outputFile2("stage2.txt");
 
     for(int i=0;i<trianglesStage2.size();i++)
     {
@@ -539,6 +557,23 @@ int main()
     // stage 2: View Transformation complted
 
     //stage 3: Projection Transformation
+    //tasking output of stage2 as input of this stage
+    ifstream inputFileStage2("stage2.txt");
+    trianglesStage2.clear();
+    while(inputFileStage2.peek() != EOF)
+    {
+        
+        Triangle t1;
+        inputFileStage2>>t1.a>>t1.b>>t1.c;
+        trianglesStage2.push_back(t1);
+        
+    }
+    //because last triangle gets double push_back because eof is reached
+    // after some \r \n charecter so last triangle read
+    // gets the value of previous triangle which is extra
+    // so we are popping that one
+    trianglesStage2.pop_back(); 
+    
 
     // double fovy,aspectRatio,near,far;
     // inputFile>>fovy>>aspectRatio>>near>>far;
@@ -557,7 +592,7 @@ int main()
 
     vector<Triangle> trianglesStage3 = p.multiplyTriangles(trianglesStage2);
 
-    ofstream outputFile3("output3.txt");
+    ofstream outputFile3("stage3.txt");
     
     for(int i=0;i<trianglesStage3.size();i++)
     {
@@ -566,16 +601,33 @@ int main()
 
     outputFile3.close();
     // stage 4: clipping & scan conversion using Z-buffer algorithm
+    // reading output of stage3 as input of this stage
+    ifstream inputFileStage3("stage3.txt");
+    trianglesStage3.clear();
+    while(inputFileStage3.peek() != EOF)
+    {
+        
+        Triangle t1;
+        inputFileStage3>>t1.a>>t1.b>>t1.c;
+        trianglesStage3.push_back(t1);
+        
+    }
+    //because last triangle gets double push_back because eof is reached
+    // after some \r \n charecter so last triangle read
+    // gets the value of previous triangle which is extra
+    // so we are popping that one
+    trianglesStage3.pop_back(); 
+    
+    
     ifstream inputFile2(file2);
-
     double screenWidth, screenHeight, leftLimit, rightLimit, bottomLimit,
-           topLimit, zFront, zNear;
+           topLimit, zFront, zFar;
         
     inputFile2>>screenWidth>>screenHeight;
     inputFile2>>leftLimit>>bottomLimit;
     rightLimit = -leftLimit;
     topLimit = - bottomLimit;
-    inputFile2>>zFront>>zNear;
+    inputFile2>>zFront>>zFar;
 
     vector<Color> triangleColors;
     for(int i=0;i<trianglesStage3.size();i++)
@@ -603,7 +655,7 @@ int main()
         vector<double> t;
         for(int j=0;j<screenWidth;j++)
         {
-            t.push_back(zNear);
+            t.push_back(zFar);
         }
         zBuffer.push_back(t);
     }
@@ -618,6 +670,7 @@ int main()
         double bottomScanLine = t.bottomScanLine(-topY,dy);
         int rowStart = (topY-topScanLine)/dy;
         int rowEnd = (topY-bottomScanLine)/dy;
+        
         for(int j=rowStart;j<=rowEnd;j++)
         {
             double ys  = topY-j*dy;
@@ -631,7 +684,7 @@ int main()
             double x31 = p3.x - (p3.x-p1.x) * ((p3.y-ys)/(p3.y-p1.y));
             vector<double> zs = t.filterZ(z12,z23,z31);
             vector<double> xs = t.filterX(x12,x23,x31);
-            if(zs.size()!=2 || xs.size()!=2)
+            if(zs.size()<2 || xs.size()<2)
             {
                 continue;
             }
@@ -673,6 +726,7 @@ int main()
             // bool c3 = x12<x23;
             // bool c4 = x23<x12;
             // cout<<"kill meh"<<endl;
+            
             for(int k=colStart;k<=colEnd;k++)
             {
                 double xp = leftX + k*dx;
@@ -709,7 +763,7 @@ int main()
     }
     outputFile4.close();
 
-    image.save_image("test.bmp");
+    image.save_image("out.bmp");
 
 
 }
